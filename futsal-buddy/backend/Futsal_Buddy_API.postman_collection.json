@@ -1,0 +1,590 @@
+{
+  "info": {
+    "name": "Futsal Buddy API",
+    "description": "Complete API collection for Futsal Buddy - Find Opponents, Search Teammates, AI Insights\n\n## Three Actors:\n- **Player** – Create profile, search teammates/opponents, join matches & teams\n- **Organizer** – Create & manage matches and teams\n- **Admin** – Full platform control, user management, dashboard\n\n## How to use:\n1. Register a user → Login → Copy token\n2. Set `token` variable in collection variables\n3. All protected routes auto-use the token via `{{token}}`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api/v1", "type": "string" },
+    { "key": "token", "value": "PASTE_YOUR_TOKEN_HERE", "type": "string" },
+    { "key": "player_profile_id", "value": "", "type": "string" },
+    { "key": "match_id", "value": "", "type": "string" },
+    { "key": "team_id", "value": "", "type": "string" },
+    { "key": "user_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health",
+            "description": "Check if the server is running"
+          }
+        },
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:5000/",
+            "description": "Root endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth (All Roles)",
+      "item": [
+        {
+          "name": "Register – Player",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register",
+            "description": "Register a new player account. Role defaults to 'player'.",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.player@futsal.com\",\n  \"username\": \"john_striker\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register – Organizer",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register",
+            "description": "Register an organizer account. After registering, manually update role to 'organizer' via Admin API or seed the DB.",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sara\",\n  \"lastName\": \"Organizer\",\n  \"email\": \"sara.org@futsal.com\",\n  \"username\": \"sara_events\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register – Admin",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register",
+            "description": "Register admin. Set role to 'admin' manually in MongoDB Compass or update via existing admin.",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"email\": \"admin@futsal.com\",\n  \"username\": \"super_admin\",\n  \"password\": \"admin123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.token) {",
+                  "  pm.collectionVariables.set('token', res.data.token);",
+                  "  console.log('✅ Token saved! Role:', res.data.user.role);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/login",
+            "description": "Login with email & password. Token is auto-saved to collection variable `token`.",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.player@futsal.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/auth/profile",
+            "description": "Get currently logged-in user's profile",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/auth/profile",
+            "description": "Update user's name or username",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Johnny\",\n  \"lastName\": \"Doe\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏃 Player – Profile & Search",
+      "item": [
+        {
+          "name": "Create Player Profile",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/players",
+            "description": "Create your player profile. Required: age, city. Role must be 'player'.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"midfielder\",\n  \"skillLevel\": \"intermediate\",\n  \"preferredFoot\": \"right\",\n  \"age\": 22,\n  \"city\": \"Kathmandu\",\n  \"bio\": \"Passionate futsal player looking for competitive games.\",\n  \"availability\": [\"saturday\", \"sunday\", \"friday\"],\n  \"lookingFor\": \"both\",\n  \"isAvailable\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Player Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/players/me/profile",
+            "description": "Get your own player profile",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update My Player Profile",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/players/me/profile",
+            "description": "Update your player profile",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillLevel\": \"advanced\",\n  \"bio\": \"Advanced midfielder with 5 years of futsal experience.\",\n  \"isAvailable\": true,\n  \"lookingFor\": \"teammate\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Player Profile by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/players/{{player_profile_id}}",
+            "description": "View any player's profile by their profile ID",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Search All Players",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/players/search?city=Kathmandu&skillLevel=intermediate&page=1&limit=10",
+              "query": [
+                { "key": "city", "value": "Kathmandu", "description": "Filter by city" },
+                { "key": "skillLevel", "value": "intermediate", "description": "beginner | intermediate | advanced | professional" },
+                { "key": "position", "value": "", "description": "goalkeeper | defender | midfielder | forward | any" },
+                { "key": "isAvailable", "value": "", "description": "true | false" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Search all players with optional filters",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Search Teammates",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/players/search/teammates?city=Kathmandu&skillLevel=intermediate",
+              "query": [
+                { "key": "city", "value": "Kathmandu" },
+                { "key": "skillLevel", "value": "intermediate" },
+                { "key": "position", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Find players who are looking for a TEAMMATE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Search Opponents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/players/search/opponents?city=Kathmandu",
+              "query": [
+                { "key": "city", "value": "Kathmandu" },
+                { "key": "skillLevel", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Find players who want to play against you (looking for OPPONENT)",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Delete My Player Profile",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/players/me/profile",
+            "description": "Delete your player profile",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Organizer – Matches",
+      "item": [
+        {
+          "name": "Create Match",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/matches",
+            "description": "Create a new match. Requires Organizer or Admin role.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Friday Night Futsal\",\n  \"venue\": \"Turf Arena Baneshwor\",\n  \"city\": \"Kathmandu\",\n  \"matchDate\": \"2025-07-15\",\n  \"matchTime\": \"18:00\",\n  \"maxPlayers\": 10,\n  \"skillLevel\": \"intermediate\",\n  \"matchType\": \"friendly\",\n  \"description\": \"Casual Friday evening game. Everyone welcome!\",\n  \"entryFee\": 200\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Matches (Organizer)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/matches/my/matches",
+            "description": "Get all matches created by the logged-in organizer",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Search Matches",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/matches/search?city=Kathmandu&matchType=friendly&status=open&page=1&limit=10",
+              "query": [
+                { "key": "city", "value": "Kathmandu" },
+                { "key": "matchType", "value": "friendly", "description": "friendly | competitive | tournament" },
+                { "key": "skillLevel", "value": "" },
+                { "key": "status", "value": "open", "description": "open | full | ongoing | completed | cancelled" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Search open matches. Default status = open.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Match by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/matches/{{match_id}}",
+            "description": "Get a specific match by ID. Set match_id in collection variables.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Match",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/matches/{{match_id}}",
+            "description": "Update match details. Only the organizer who created it can update.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Friday Night Futsal – Updated\",\n  \"matchTime\": \"19:00\",\n  \"entryFee\": 250\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Match",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/matches/{{match_id}}",
+            "description": "Delete a match. Only the organizer who created it can delete.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Join a Match (Player)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/matches/{{match_id}}/join",
+            "description": "Any logged-in user can join an open match.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Leave a Match (Player)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/matches/{{match_id}}/leave",
+            "description": "Leave a match you previously joined.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Organizer – Teams",
+      "item": [
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/teams",
+            "description": "Create a new team. Requires Organizer or Admin role. Organizer is auto-added as first member.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kathmandu Kings\",\n  \"city\": \"Kathmandu\",\n  \"description\": \"We are a competitive futsal team based in Kathmandu. Looking for skilled players.\",\n  \"skillLevel\": \"intermediate\",\n  \"maxMembers\": 12,\n  \"isOpen\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Teams (Organizer)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/teams/my/teams",
+            "description": "Get all teams created by the logged-in organizer",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Search Teams",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/search?city=Kathmandu&isOpen=true&page=1&limit=10",
+              "query": [
+                { "key": "city", "value": "Kathmandu" },
+                { "key": "skillLevel", "value": "", "description": "beginner | intermediate | advanced | mixed" },
+                { "key": "isOpen", "value": "true" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Search for teams to join",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Team by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/teams/{{team_id}}",
+            "description": "Get a specific team by ID",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/teams/{{team_id}}",
+            "description": "Update team details. Only the organizer who created it can update.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated team description. Now accepting advanced players.\",\n  \"isOpen\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Team",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/teams/{{team_id}}",
+            "description": "Delete a team. Only the organizer who created it can delete.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Join a Team (Player)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/teams/{{team_id}}/join",
+            "description": "Any logged-in user can join an open team.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Leave a Team (Player)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/teams/{{team_id}}/leave",
+            "description": "Leave a team. Organizer cannot leave their own team.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 AI Insights",
+      "item": [
+        {
+          "name": "Get My AI Insights (Player)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/ai/my-insights",
+            "description": "Get personalized AI analysis based on your player profile. Requires a player profile to exist first.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Match Tip",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/ai/match-tip",
+            "description": "Get an AI tip for a specific match type and skill level",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillLevel\": \"intermediate\",\n  \"matchType\": \"competitive\",\n  \"playersCount\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Team Advice",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/ai/team-advice",
+            "description": "Get AI advice for your team based on skill level and size",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillLevel\": \"mixed\",\n  \"memberCount\": 7,\n  \"maxMembers\": 12\n}"
+            }
+          }
+        },
+        {
+          "name": "Ask AI Any Question",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/ai/ask",
+            "description": "Ask the AI any futsal-related question",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is the best formation for a 5v5 futsal game with beginners?\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Admin",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/dashboard",
+            "description": "Get platform stats: total users, matches, teams, breakdown by role. Admin only.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/users",
+            "description": "Get all registered users. Admin only.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/admin/users/{{user_id}}",
+            "description": "Get a specific user by MongoDB ID. Admin only.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update User (Change Role etc.)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/admin/users/{{user_id}}",
+            "description": "Update any user's details including role. Use this to promote a user to organizer or admin.",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"organizer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/admin/users/{{user_id}}/deactivate",
+            "description": "Deactivate a user account (they can no longer login). Admin only.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/admin/users/{{user_id}}/activate",
+            "description": "Re-activate a deactivated user account. Admin only.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/admin/users/{{user_id}}",
+            "description": "Permanently delete a user. Admin only. Use with caution!",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}
