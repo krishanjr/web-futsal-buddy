@@ -13,6 +13,9 @@ export const MatchSchema = z.object({
     description: z.string().max(1000).optional(),
     status: z.enum(["open", "full", "ongoing", "completed", "cancelled"]).default("open"),
     entryFee: z.number().min(0).default(0),
+    teamA: z.array(z.string()).default([]),
+    teamB: z.array(z.string()).default([]),
+    teamsAssigned: z.boolean().default(false),
 });
 
 export type MatchType = z.infer<typeof MatchSchema>;

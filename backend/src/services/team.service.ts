@@ -1,9 +1,12 @@
 import { TeamMongoRepository } from "../repositories/team.repository";
+import { NotifyService } from "../repositories/notification.repository";
+import { UserMongoRepository } from "../repositories/user.repository";
 import { CreateTeamDTO, UpdateTeamDTO, SearchTeamDTO } from "../dtos/team.dto";
 import { ITeam } from "../models/team.model";
 import { HttpException } from "../exceptions/http-exception";
 
 const teamRepository = new TeamMongoRepository();
+const userRepository = new UserMongoRepository();
 
 export class TeamService {
     async createTeam(organizerId: string, data: CreateTeamDTO): Promise<ITeam> {
@@ -74,7 +77,39 @@ export class TeamService {
 
         const updated = await teamRepository.addMember(teamId, userId);
         if (!updated) throw new HttpException(500, "Failed to join team");
+        await NotifyService.send(
+            team.organizerId,
+            "team_joined",
+            `A new player joined your team ${team.name}`,
+            teamId
+        );
         return updated;
+    }
+
+    async invitePlayer(teamId: string, captainId: string, username: string): Promise<void> {
+        const team = await teamRepository.findById(teamId);
+        if (!team) throw new HttpException(404, "Team not found");
+        if (team.organizerId !== captainId) {
+            throw new HttpException(403, "Only the team captain can send invites");
+        }
+
+        const invitee = await userRepository.getUserByUsername(username);
+        if (!invitee) throw new HttpException(404, "No user found with that username");
+
+        const inviteeId = invitee._id.toString();
+        if (team.members.includes(inviteeId)) {
+            throw new HttpException(400, "That player is already a member");
+        }
+        if (team.members.length >= team.maxMembers) {
+            throw new HttpException(400, "Team is already full");
+        }
+
+        await NotifyService.send(
+            inviteeId,
+            "invitation_received",
+            `${team.name} invited you to join their team`,
+            teamId
+        );
     }
 
     async leaveTeam(teamId: string, userId: string): Promise<ITeam> {

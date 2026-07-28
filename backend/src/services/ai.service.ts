@@ -8,18 +8,33 @@ export class AIService {
             return this.getMockInsight(prompt);
         }
 
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                }),
-            }
-        );
+        let response: Response;
+        try {
+            response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-goog-api-key": GEMINI_API_KEY,
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                    }),
+                }
+            );
+        } catch (networkErr: any) {
+            // fetch() itself throws for network-level failures (DNS, timeout,
+            // TLS, offline, etc.) — these never reach the response.ok check
+            // below, so without this they were failing silently as a generic
+            // 500 with zero clue why. This makes the real cause visible.
+            console.error("Gemini network error (fetch failed before getting a response):", networkErr);
+            throw new HttpException(500, "AI service unavailable: could not reach Gemini");
+        }
 
         if (!response.ok) {
+            const errBody = await response.text().catch(() => "");
+            console.error("Gemini API error:", response.status, errBody);
             throw new HttpException(500, "AI service unavailable");
         }
 

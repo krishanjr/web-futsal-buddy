@@ -112,3 +112,12 @@ export async function toggleUserActiveAction(id: string, activate: boolean) {
   });
   revalidatePath("/admin/users");
 }
+
+export async function verifyOrganizerAction(id: string) {
+  const session = await requireSession();
+  await apiFetch(`/admin/users/${id}/verify-organizer`, {
+    method: "PATCH",
+    token: session.token,
+  });
+  revalidatePath("/admin/users");
+}

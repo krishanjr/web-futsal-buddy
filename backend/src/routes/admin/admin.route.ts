@@ -33,4 +33,28 @@ adminRouter.get("/matches/:id", (req, res) => adminController.getMatchById(req, 
 adminRouter.patch("/matches/:id", (req, res) => adminController.updateMatch(req, res));
 adminRouter.delete("/matches/:id", (req, res) => adminController.deleteMatch(req, res));
 
+// Futsals
+adminRouter.get("/futsals", (req, res) => adminController.getAllFutsals(req, res));
+adminRouter.get("/futsals/:id", (req, res) => adminController.getFutsalById(req, res));
+adminRouter.patch("/futsals/:id/verify", (req, res) => adminController.verifyFutsal(req, res));
+adminRouter.patch("/futsals/:id/unverify", (req, res) => adminController.unverifyFutsal(req, res));
+adminRouter.delete("/futsals/:id", (req, res) => adminController.deleteFutsal(req, res));
+
+// Bookings
+adminRouter.get("/bookings", (req, res) => adminController.getAllBookings(req, res));
+adminRouter.delete("/bookings/:id", (req, res) => adminController.deleteBooking(req, res));
+
+// Challenges
+adminRouter.get("/challenges", (req, res) => adminController.getAllChallenges(req, res));
+
+// Organizer account verification
+adminRouter.patch("/users/:id/verify-organizer", (req, res) => adminController.verifyOrganizerAccount(req, res));
+
+// Reported users
+adminRouter.get("/reports", (req, res) => adminController.getAllReports(req, res));
+adminRouter.patch("/reports/:id/resolve", (req, res) => adminController.resolveReport(req, res));
+
+// Analytics
+adminRouter.get("/analytics", (req, res) => adminController.getAnalytics(req, res));
+
 export default adminRouter;

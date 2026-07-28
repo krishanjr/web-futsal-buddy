@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { loginAction, AuthFormState } from "@/lib/actions/auth-actions";
+import GoogleSignInButton from "@/components/shared/GoogleSignInButton";
 
 const initialState: AuthFormState = { success: true };
 
@@ -36,12 +37,20 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="password"
-          className="text-sm font-medium text-gray-700"
-        >
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-xs text-green-700 hover:text-green-900 font-medium"
+          >
+            Forgot Password?
+          </Link>
+        </div>
         <input
           id="password"
           name="password"
@@ -65,6 +74,14 @@ export default function LoginForm() {
         Admins and players both sign in here — you&apos;ll land on the right
         place automatically.
       </p>
+
+      <div className="relative flex items-center py-1">
+        <div className="flex-grow border-t border-gray-100" />
+        <span className="mx-3 text-xs text-gray-400">or</span>
+        <div className="flex-grow border-t border-gray-100" />
+      </div>
+
+      <GoogleSignInButton />
 
       <div className="pt-3 border-t border-gray-100 text-center">
         <p className="text-sm text-gray-500">

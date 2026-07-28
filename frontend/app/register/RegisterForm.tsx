@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import InputField from "@/components/InputField";
 import { registerAction, AuthFormState } from "@/lib/actions/auth-actions";
+import GoogleSignInButton from "@/components/shared/GoogleSignInButton";
 
 const initialState: AuthFormState = { success: true };
 
@@ -65,9 +66,29 @@ export default function RegisterForm() {
         required
       />
 
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-gray-700">I am a…</label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 has-[:checked]:border-green-600 has-[:checked]:bg-green-50 has-[:checked]:text-green-800 cursor-pointer transition-colors">
+            <input
+              type="radio"
+              name="role"
+              value="player"
+              defaultChecked
+              className="text-green-600"
+            />
+            Player
+          </label>
+          <label className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 has-[:checked]:border-green-600 has-[:checked]:bg-green-50 has-[:checked]:text-green-800 cursor-pointer transition-colors">
+            <input type="radio" name="role" value="organizer" className="text-green-600" />
+            Organizer (Futsal Owner)
+          </label>
+        </div>
+      </div>
+
       <p className="text-xs text-gray-400 -mt-2">
-        New accounts join as Players by default. An admin can promote you to
-        Organizer or Admin later.
+        Organizers manage futsal grounds and bookings. Admin accounts are created by
+        Futsal Buddy staff only.
       </p>
 
       <button
@@ -77,6 +98,14 @@ export default function RegisterForm() {
       >
         {pending ? "Creating account…" : "Create Account"}
       </button>
+
+      <div className="relative flex items-center py-1">
+        <div className="flex-grow border-t border-gray-100" />
+        <span className="mx-3 text-xs text-gray-400">or</span>
+        <div className="flex-grow border-t border-gray-100" />
+      </div>
+
+      <GoogleSignInButton />
 
       <div className="pt-3 border-t border-gray-100 text-center">
         <p className="text-sm text-gray-500">

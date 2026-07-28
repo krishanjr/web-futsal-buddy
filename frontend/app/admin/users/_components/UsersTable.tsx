@@ -3,6 +3,7 @@ import { AdminUser } from "@/lib/types";
 import {
   deleteUserAction,
   toggleUserActiveAction,
+  verifyOrganizerAction,
 } from "@/lib/actions/admin-user-actions";
 import DeleteButton from "@/components/admin/DeleteButton";
 import ActionButton from "@/components/admin/ActionButton";
@@ -45,6 +46,15 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
               >
                 {u.role}
               </span>
+              {u.role === "organizer" && (
+                <span
+                  className={`ml-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
+                    u.isVerified ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
+                  }`}
+                >
+                  {u.isVerified ? "Verified" : "Unverified"}
+                </span>
+              )}
             </td>
             <td className="px-5 py-3">
               <span
@@ -63,6 +73,13 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
                 >
                   Edit
                 </Link>
+                {u.role === "organizer" && !u.isVerified && (
+                  <ActionButton
+                    action={verifyOrganizerAction.bind(null, u._id)}
+                    label="Verify"
+                    className="text-xs font-medium text-green-700 hover:text-green-900 disabled:opacity-50 transition-colors"
+                  />
+                )}
                 <ActionButton
                   action={toggleUserActiveAction.bind(null, u._id, !u.isActive)}
                   label={u.isActive ? "Deactivate" : "Activate"}

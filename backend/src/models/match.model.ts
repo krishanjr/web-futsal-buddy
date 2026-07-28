@@ -35,6 +35,9 @@ const MatchSchema: Schema = new Schema<IMatch>(
         },
         entryFee: { type: Number, default: 0 },
         players: { type: [String], default: [] }, // userId list
+        teamA: { type: [String], default: [] },
+        teamB: { type: [String], default: [] },
+        teamsAssigned: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

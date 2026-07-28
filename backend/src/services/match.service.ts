@@ -2,8 +2,11 @@ import { MatchMongoRepository } from "../repositories/match.repository";
 import { CreateMatchDTO, UpdateMatchDTO, SearchMatchDTO } from "../dtos/match.dto";
 import { IMatch } from "../models/match.model";
 import { HttpException } from "../exceptions/http-exception";
+import { TeamBalancerService } from "./team-balancer.service";
+import { NotifyService } from "../repositories/notification.repository";
 
 const matchRepository = new MatchMongoRepository();
+const teamBalancer = new TeamBalancerService();
 
 export class MatchService {
     async createMatch(organizerId: string, data: CreateMatchDTO): Promise<IMatch> {
@@ -73,10 +76,30 @@ export class MatchService {
         const updated = await matchRepository.addPlayer(matchId, userId);
         if (!updated) throw new HttpException(500, "Failed to join match");
 
-        // Auto-update status to full if maxPlayers reached
+        // Auto-update status to full if maxPlayers reached, and auto-assign
+        // balanced teams via the ML strength model — the "lobby fills up,
+        // teams get revealed" moment.
         if (updated.players.length >= updated.maxPlayers) {
-            await matchRepository.update(matchId, { status: "full" } as Partial<IMatch>);
-            updated.status = "full";
+            const { teamA, teamB } = await teamBalancer.balanceTeams(updated.players);
+            const finalized = await matchRepository.update(matchId, {
+                status: "full",
+                teamA,
+                teamB,
+                teamsAssigned: true,
+            } as Partial<IMatch>);
+
+            await Promise.all(
+                updated.players.map((pid) =>
+                    NotifyService.send(
+                        pid,
+                        "team_joined",
+                        `"${updated.title}" is full — teams have been assigned! Check your lobby.`,
+                        matchId
+                    )
+                )
+            );
+
+            return finalized || updated;
         }
 
         return updated;
@@ -88,14 +111,23 @@ export class MatchService {
         if (!match.players.includes(userId)) {
             throw new HttpException(400, "You have not joined this match");
         }
+        if (match.status === "ongoing" || match.status === "completed" || match.status === "cancelled") {
+            throw new HttpException(400, `Cannot leave a match that is already ${match.status}`);
+        }
 
         const updated = await matchRepository.removePlayer(matchId, userId);
         if (!updated) throw new HttpException(500, "Failed to leave match");
 
-        // Reopen if was full
-        if (match.status === "full") {
-            await matchRepository.update(matchId, { status: "open" } as Partial<IMatch>);
-            updated.status = "open";
+        // Reopen and clear team assignment if it was full/assigned — the
+        // lobby composition changed, so the balanced split is no longer valid.
+        if (match.status === "full" || match.teamsAssigned) {
+            const reopened = await matchRepository.update(matchId, {
+                status: "open",
+                teamA: [],
+                teamB: [],
+                teamsAssigned: false,
+            } as Partial<IMatch>);
+            return reopened || updated;
         }
 
         return updated;

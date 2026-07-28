@@ -89,6 +89,18 @@ export class TeamController {
         }
     }
 
+    async invitePlayer(req: Request, res: Response) {
+        try {
+            const captainId = (req.user as IUser)._id.toString();
+            const { username } = req.body;
+            if (!username) return ApiResponseHelper.error(res, "username is required", 400);
+            await teamService.invitePlayer(req.params.id, captainId, username);
+            return ApiResponseHelper.success(res, null, "Invitation sent");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
     async leaveTeam(req: Request, res: Response) {
         try {
             const userId = (req.user as IUser)._id.toString();

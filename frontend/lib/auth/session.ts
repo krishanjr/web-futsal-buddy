@@ -12,6 +12,7 @@ export interface SessionUser {
   role: "player" | "organizer" | "admin";
   isActive: boolean;
   isVerified: boolean;
+  profilePhoto?: string | null;
 }
 
 export interface Session {

@@ -16,6 +16,7 @@ playerRouter.get("/:id", authorizedMiddleware, (req, res) => playerController.ge
 // Player profile CRUD (player or admin only)
 playerRouter.post("/", authorizedMiddleware, playerMiddleware, (req, res) => playerController.createProfile(req, res));
 playerRouter.get("/me/profile", authorizedMiddleware, playerMiddleware, (req, res) => playerController.getMyProfile(req, res));
+playerRouter.get("/me/strength", authorizedMiddleware, playerMiddleware, (req, res) => playerController.getMyStrength(req, res));
 playerRouter.patch("/me/profile", authorizedMiddleware, playerMiddleware, (req, res) => playerController.updateProfile(req, res));
 playerRouter.delete("/me/profile", authorizedMiddleware, playerMiddleware, (req, res) => playerController.deleteProfile(req, res));
 

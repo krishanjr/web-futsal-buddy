@@ -8,8 +8,16 @@ import userRoutes from "./routes/user.route";
 import playerRoutes from "./routes/player/player.route";
 import matchRoutes from "./routes/organizer/match.route";
 import teamRoutes from "./routes/organizer/team.route";
+import futsalRoutes from "./routes/organizer/futsal.route";
+import bookingRoutes from "./routes/organizer/booking.route";
+import challengeRoutes from "./routes/player/challenge.route";
+import notificationRoutes from "./routes/notification.route";
+import reviewRoutes from "./routes/review.route";
+import reportRoutes from "./routes/report.route";
 import adminRoutes from "./routes/admin/admin.route";
+import postRoutes from "./routes/post.route";
 import aiRoutes from "./routes/ai.route";
+import uploadRoutes from "./routes/upload.route";
 
 const app: Application = express();
 
@@ -57,11 +65,38 @@ app.use("/api/v1/matches", matchRoutes);
 // Organizer routes (teams)
 app.use("/api/v1/teams", teamRoutes);
 
+// Futsal venues (organizer manages, players browse)
+app.use("/api/v1/futsals", futsalRoutes);
+
+// Bookings (player books, organizer approves/rejects)
+app.use("/api/v1/bookings", bookingRoutes);
+
+// Challenges (team vs team opponent matchmaking)
+app.use("/api/v1/challenges", challengeRoutes);
+
+// Notifications
+app.use("/api/v1/notifications", notificationRoutes);
+
+// Reviews
+app.use("/api/v1/reviews", reviewRoutes);
+
+// Reports (user moderation)
+app.use("/api/v1/reports", reportRoutes);
+
 // Admin routes
 app.use("/api/v1/admin", adminRoutes);
 
 // AI Insights routes
 app.use("/api/v1/ai", aiRoutes);
+
+// Post + Application marketplace (find teammate / find opponent)
+app.use("/api/v1/posts", postRoutes);
+
+// Upload routes
+app.use("/api/v1/upload", uploadRoutes);
+
+// Serve static files
+app.use("/uploads", express.static("uploads"));
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {

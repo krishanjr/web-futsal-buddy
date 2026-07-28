@@ -3,7 +3,8 @@ import { Request, Response } from "express";
 
 import { AdminService } from "../../services/admin.service";
 import { UpdateUserDTO } from "../../dtos/user.dto";
-import { SearchUserDTO, AdminCreateUserDTO, AdminListQueryDTO } from "../../dtos/admin.dto";
+import { SearchUserDTO, AdminCreateUserDTO, AdminListQueryDTO, SearchFutsalAdminDTO } from "../../dtos/admin.dto";
+import { AdminBookingQueryDTO } from "../../dtos/booking.dto";
 import { CreateTeamDTO, UpdateTeamDTO } from "../../dtos/team.dto";
 import { CreateMatchDTO, UpdateMatchDTO } from "../../dtos/match.dto";
 import { ApiResponseHelper } from "../../utils/apihelper.util";
@@ -210,6 +211,134 @@ export class AdminController {
         try {
             await adminService.deleteMatch(req.params.id);
             return ApiResponseHelper.success(res, null, "Match deleted");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Futsals ────────────────────────────────────────────────────────────
+    async getAllFutsals(req: Request, res: Response) {
+        try {
+            const parsed = SearchFutsalAdminDTO.safeParse(req.query);
+            if (!parsed.success) {
+                return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
+            }
+            const result = await adminService.getAllFutsals(parsed.data);
+            return ApiResponseHelper.success(res, { futsals: result.futsals, pagination: result.pagination }, "All futsals fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async getFutsalById(req: Request, res: Response) {
+        try {
+            const futsal = await adminService.getFutsalById(req.params.id);
+            return ApiResponseHelper.success(res, futsal, "Futsal fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async verifyFutsal(req: Request, res: Response) {
+        try {
+            const futsal = await adminService.verifyFutsal(req.params.id);
+            return ApiResponseHelper.success(res, futsal, "Futsal verified");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async unverifyFutsal(req: Request, res: Response) {
+        try {
+            const futsal = await adminService.unverifyFutsal(req.params.id);
+            return ApiResponseHelper.success(res, futsal, "Futsal verification revoked");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async deleteFutsal(req: Request, res: Response) {
+        try {
+            await adminService.deleteFutsal(req.params.id);
+            return ApiResponseHelper.success(res, null, "Futsal deleted");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Bookings ───────────────────────────────────────────────────────────
+    async getAllBookings(req: Request, res: Response) {
+        try {
+            const parsed = AdminBookingQueryDTO.safeParse(req.query);
+            if (!parsed.success) {
+                return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
+            }
+            const result = await adminService.getAllBookings(parsed.data);
+            return ApiResponseHelper.success(res, { bookings: result.bookings, pagination: result.pagination }, "All bookings fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async deleteBooking(req: Request, res: Response) {
+        try {
+            await adminService.deleteBooking(req.params.id);
+            return ApiResponseHelper.success(res, null, "Booking cancelled");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Challenges ─────────────────────────────────────────────────────────
+    async getAllChallenges(req: Request, res: Response) {
+        try {
+            const page = Number(req.query.page) || 1;
+            const size = Number(req.query.size) || 10;
+            const result = await adminService.getAllChallenges(page, size);
+            return ApiResponseHelper.success(res, { challenges: result.challenges, pagination: result.pagination }, "All challenges fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Organizer verification ────────────────────────────────────────────
+    async verifyOrganizerAccount(req: Request, res: Response) {
+        try {
+            const user = await adminService.verifyOrganizerAccount(req.params.id);
+            return ApiResponseHelper.success(res, user, "Organizer account verified");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Reports ────────────────────────────────────────────────────────────
+    async getAllReports(req: Request, res: Response) {
+        try {
+            const status = typeof req.query.status === "string" ? req.query.status : undefined;
+            const page = Number(req.query.page) || 1;
+            const size = Number(req.query.size) || 10;
+            const result = await adminService.getAllReports(status, page, size);
+            return ApiResponseHelper.success(res, { reports: result.reports, pagination: result.pagination }, "Reports fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async resolveReport(req: Request, res: Response) {
+        try {
+            const status = req.body.status === "dismissed" ? "dismissed" : "resolved";
+            const report = await adminService.resolveReport(req.params.id, status);
+            return ApiResponseHelper.success(res, report, `Report marked ${status}`);
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    // ─── Analytics ──────────────────────────────────────────────────────────
+    async getAnalytics(req: Request, res: Response) {
+        try {
+            const analytics = await adminService.getAnalytics();
+            return ApiResponseHelper.success(res, analytics, "Analytics fetched");
         } catch (err: any) {
             return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
         }

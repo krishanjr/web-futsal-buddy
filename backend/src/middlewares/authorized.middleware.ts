@@ -45,6 +45,16 @@ export const authorizedMiddleware = async (
         req.user = user;
         return next();
     } catch (err: Error | any) {
+        // jwt.verify() throws its own plain Error (not an HttpException) for a
+        // malformed, tampered, or expired token — without this check, that
+        // falls through to a generic 500 instead of the 401 it actually is.
+        if (
+            err?.name === "JsonWebTokenError" ||
+            err?.name === "TokenExpiredError" ||
+            err?.name === "NotBeforeError"
+        ) {
+            return ApiResponseHelper.error(res, "Unauthorized: Invalid or expired token", 401);
+        }
         return ApiResponseHelper.error(
             res,
             err.message || "Internal Server Error",

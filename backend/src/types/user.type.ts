@@ -6,7 +6,7 @@ export const UserSchema = z.object({
     email: z.string().email("Invalid email address"),
     username: z.string().min(3, "Username must be at least 3 characters long"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
-    // Three actors: player, organizer, admin
+    profilePhoto: z.string().optional(),
     role: z.enum(["player", "organizer", "admin"]).default("player"),
     isVerified: z.boolean().default(false),
     isActive: z.boolean().default(true),

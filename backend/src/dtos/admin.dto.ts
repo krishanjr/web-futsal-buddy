@@ -21,6 +21,16 @@ export const AdminCreateUserDTO = z.object({
 });
 export type AdminCreateUserDTO = z.infer<typeof AdminCreateUserDTO>;
 
+export const SearchFutsalAdminDTO = z.object({
+    district: z.string().optional(),
+    search: z.string().optional(),
+    isVerified: z.coerce.boolean().optional(),
+    isActive: z.coerce.boolean().optional(),
+    page: z.coerce.number().min(1).default(1),
+    size: z.coerce.number().min(1).max(100).default(10),
+});
+export type SearchFutsalAdminDTO = z.infer<typeof SearchFutsalAdminDTO>;
+
 export const AdminListQueryDTO = z.object({
     search: z.string().optional(),
     page: z.coerce.number().min(1).default(1),

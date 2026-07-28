@@ -43,7 +43,39 @@ export async function loginAction(
 
   await setSessionCookie({ token: res.data.token, user: res.data.user });
 
-  redirect(res.data.user.role === "admin" ? "/admin" : "/dashboard");
+  redirect(roleHome(res.data.user.role));
+}
+
+export interface GoogleLoginResult {
+  success: boolean;
+  message?: string;
+  redirectTo?: string;
+}
+
+// Called from the client after a successful Firebase Google popup sign-in.
+// We can't use `redirect()` here the way loginAction does, because this isn't
+// invoked as a <form action> — it's called directly from a client component's
+// onClick handler, which needs a normal return value to know where to send
+// the user next.
+export async function googleLoginAction(idToken: string): Promise<GoogleLoginResult> {
+  const res = await apiFetch<{ user: Session["user"]; token: string }>(
+    "/auth/google-login",
+    { method: "POST", body: { idToken } }
+  );
+
+  if (!res.success || !res.data) {
+    return { success: false, message: res.message || "Google sign-in failed" };
+  }
+
+  await setSessionCookie({ token: res.data.token, user: res.data.user });
+
+  return { success: true, redirectTo: roleHome(res.data.user.role) };
+}
+
+function roleHome(role: string) {
+  if (role === "admin") return "/admin";
+  if (role === "organizer") return "/organizer";
+  return "/dashboard";
 }
 
 export async function registerAction(
@@ -55,6 +87,7 @@ export async function registerAction(
   const email = String(formData.get("email") || "").trim();
   const username = String(formData.get("username") || "").trim();
   const password = String(formData.get("password") || "");
+  const role = String(formData.get("role") || "player") === "organizer" ? "organizer" : "player";
 
   if (!firstName || !lastName || !email || !username || !password) {
     return { success: false, message: "All fields are required" };
@@ -62,7 +95,7 @@ export async function registerAction(
 
   const res = await apiFetch("/auth/register", {
     method: "POST",
-    body: { firstName, lastName, email, username, password },
+    body: { firstName, lastName, email, username, password, role },
   });
 
   if (!res.success) {
@@ -80,7 +113,7 @@ export async function registerAction(
       token: loginRes.data.token,
       user: loginRes.data.user,
     });
-    redirect("/dashboard");
+    redirect(roleHome(loginRes.data.user.role));
   }
 
   redirect("/login");

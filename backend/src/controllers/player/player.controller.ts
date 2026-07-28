@@ -5,6 +5,7 @@ import { PlayerService } from "../../services/player.service";
 import { CreatePlayerProfileDTO, UpdatePlayerProfileDTO, SearchPlayerDTO } from "../../dtos/player.dto";
 import { ApiResponseHelper } from "../../utils/apihelper.util";
 import { IUser } from "../../models/user.model";
+import { predictStrength, getModelInfo } from "../../ml/predict";
 
 const playerService = new PlayerService();
 
@@ -28,6 +29,27 @@ export class PlayerController {
             const userId = (req.user as IUser)._id.toString();
             const profile = await playerService.getMyProfile(userId);
             return ApiResponseHelper.success(res, profile, "Player profile fetched");
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
+    async getMyStrength(req: Request, res: Response) {
+        try {
+            const userId = (req.user as IUser)._id.toString();
+            const profile = await playerService.getMyProfile(userId);
+            const strength = predictStrength({
+                skillLevel: profile.skillLevel,
+                matchesPlayed: profile.stats?.matchesPlayed ?? 0,
+                wins: profile.stats?.wins ?? 0,
+                goals: profile.stats?.goals ?? 0,
+                assists: profile.stats?.assists ?? 0,
+            });
+            return ApiResponseHelper.success(
+                res,
+                { strength, model: getModelInfo() },
+                "ML strength score calculated"
+            );
         } catch (err: any) {
             return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
         }
