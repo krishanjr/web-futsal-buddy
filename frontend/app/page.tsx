@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -8,7 +9,7 @@ export default function HomePage() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/futsal-buddy-logo.png" alt="Futsal Buddy" className="h-8 w-8" />
+            <Image src="/futsal-buddy-logo.png" alt="Futsal Buddy" width={32} height={32} />
             <span className="text-xl font-bold text-green-700">Futsal Buddy</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">

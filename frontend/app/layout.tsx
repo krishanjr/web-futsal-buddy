@@ -26,6 +26,11 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/futsal-buddy-logo.png" type="image/png" />
+        <link rel="shortcut icon" href="/futsal-buddy-logo.png" />
+        <link rel="apple-touch-icon" href="/futsal-buddy-logo.png" />
+      </head>
       <body className="min-h-screen bg-gray-50">{children}</body>
     </html>
   );
