@@ -11,6 +11,9 @@ export async function fetchAdminReportsAction(params: {
   status?: string;
 }) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   const qs = new URLSearchParams();
   if (params.page) qs.set("page", String(params.page));
   if (params.size) qs.set("size", String(params.size));
@@ -24,6 +27,9 @@ export async function fetchAdminReportsAction(params: {
 
 export async function resolveReportAction(id: string, status: "resolved" | "dismissed") {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   await apiFetch(`/admin/reports/${id}/resolve`, {
     method: "PATCH",
     token: session.token,

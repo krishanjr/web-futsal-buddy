@@ -11,6 +11,9 @@ export async function fetchOrganizerBookingsAction(params: {
   range?: "today" | "week" | "month" | "all";
 }) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   const qs = new URLSearchParams();
   if (params.futsalId) qs.set("futsalId", params.futsalId);
   if (params.status) qs.set("status", params.status);
@@ -22,11 +25,17 @@ export async function fetchOrganizerBookingsAction(params: {
 
 export async function fetchOrganizerEarningsAction() {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<Earnings>("/bookings/organizer/earnings", { token: session.token });
 }
 
 export async function approveBookingAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   await apiFetch(`/bookings/${id}/approve`, {
     method: "PATCH",
     token: session.token,
@@ -36,6 +45,9 @@ export async function approveBookingAction(id: string) {
 
 export async function rejectBookingAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   await apiFetch(`/bookings/${id}/reject`, {
     method: "PATCH",
     token: session.token,
@@ -48,6 +60,9 @@ export async function rescheduleBookingAction(
   data: { date: string; startTime: string; endTime: string }
 ) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   const res = await apiFetch(`/bookings/${id}/reschedule`, {
     method: "PATCH",
     token: session.token,

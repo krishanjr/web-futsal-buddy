@@ -13,11 +13,17 @@ export interface ActionResult {
 
 export async function fetchMyTeamsAction() {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<AdminTeam[]>("/teams/my/teams", { token: session.token });
 }
 
 export async function fetchOrganizerTeamByIdAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<AdminTeam>(`/teams/${id}`, { token: session.token });
 }
 
@@ -26,6 +32,9 @@ export async function createOrganizerTeamAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
 
   const body = {
     name: String(formData.get("name") || ""),
@@ -57,6 +66,9 @@ export async function updateOrganizerTeamAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
 
   const body = {
     name: String(formData.get("name") || ""),
@@ -84,6 +96,9 @@ export async function updateOrganizerTeamAction(
 
 export async function deleteOrganizerTeamAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   await apiFetch(`/teams/${id}`, {
     method: "DELETE",
     token: session.token,

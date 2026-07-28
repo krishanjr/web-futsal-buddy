@@ -13,11 +13,17 @@ export interface ActionResult {
 
 export async function fetchMyMatchesAction() {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<AdminMatch[]>("/matches/my/matches", { token: session.token });
 }
 
 export async function fetchOrganizerMatchByIdAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<AdminMatch>(`/matches/${id}`, { token: session.token });
 }
 
@@ -26,6 +32,9 @@ export async function createOrganizerMatchAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
 
   const body = {
     title: String(formData.get("title") || ""),
@@ -60,6 +69,9 @@ export async function updateOrganizerMatchAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
 
   const body = {
     title: String(formData.get("title") || ""),
@@ -91,6 +103,9 @@ export async function updateOrganizerMatchAction(
 
 export async function deleteOrganizerMatchAction(id: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   await apiFetch(`/matches/${id}`, {
     method: "DELETE",
     token: session.token,

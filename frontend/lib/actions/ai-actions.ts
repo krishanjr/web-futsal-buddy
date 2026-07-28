@@ -5,6 +5,9 @@ import { requireSession } from "@/lib/auth/session";
 
 export async function fetchMyInsightsAction() {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<{
     insight: string;
     recommendations: string[];
@@ -13,6 +16,9 @@ export async function fetchMyInsightsAction() {
 
 export async function askAiAction(question: string) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   return apiFetch<{ answer: string }>("/ai/ask", {
     method: "POST",
     token: session.token,

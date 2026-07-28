@@ -6,6 +6,9 @@ import { Challenge, PaginationMeta } from "@/lib/types";
 
 export async function fetchAdminChallengesAction(params: { page?: number; size?: number }) {
   const session = await requireSession();
+  if (!session) {
+    return { success: false, message: "Please log in to continue" };
+  }
   const qs = new URLSearchParams();
   if (params.page) qs.set("page", String(params.page));
   if (params.size) qs.set("size", String(params.size));
