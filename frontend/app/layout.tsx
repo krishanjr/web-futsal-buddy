@@ -9,7 +9,9 @@ export const metadata: Metadata = {
   },
   description: "Collegiate futsal league management platform.",
   icons: {
-    icon: "/futsal-buddy-logo.png",
+    icon: [{ url: "/futsal-buddy-logo.png", rel: "icon", type: "image/png" }],
+    shortcut: "/futsal-buddy-logo.png",
+    apple: "/futsal-buddy-logo.png",
   },
 };
 
