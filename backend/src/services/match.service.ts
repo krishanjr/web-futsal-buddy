@@ -1,11 +1,11 @@
-import { MatchRepository } from "../repositories/match.repository";
+import { MatchMongoRepository } from "../repositories/match.repository";
 import { CreateMatchDTO, UpdateMatchDTO, SearchMatchDTO } from "../dtos/match.dto";
 import { IMatch } from "../models/match.model";
 import { HttpException } from "../exceptions/http-exception";
 import { TeamBalancerService } from "./team-balancer.service";
 import { NotifyService } from "../repositories/notification.repository";
 
-const matchRepository = new MatchRepository();
+const matchRepository = new MatchMongoRepository();
 const teamBalancer = new TeamBalancerService();
 
 export class MatchService {
@@ -89,7 +89,7 @@ export class MatchService {
             } as Partial<IMatch>);
 
             await Promise.all(
-                updated.players.map((pid) =>
+                updated.players.map((pid: string) =>
                     NotifyService.send(
                         pid,
                         "team_joined",

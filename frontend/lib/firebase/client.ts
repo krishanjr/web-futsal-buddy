@@ -36,4 +36,4 @@ export const firebaseAuthClient = hasFirebaseConfig
 
 export const googleProvider = hasFirebaseConfig
   ? new GoogleAuthProvider()
-  : ({} as ReturnType<typeof GoogleAuthProvider>);
+  : (null as unknown as GoogleAuthProvider);

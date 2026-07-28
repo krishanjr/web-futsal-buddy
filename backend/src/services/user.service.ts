@@ -88,6 +88,13 @@ export class UserService {
      * cookies, roles) works exactly like a regular email/password login.
      */
     async googleLogin(data: GoogleLoginDTO): Promise<{ user: IUser; token: string }> {
+        if (!firebaseAuth) {
+            throw new HttpException(
+                503,
+                "Firebase Admin credentials are not configured. Configure Firebase Admin credentials to enable Google sign-in."
+            );
+        }
+
         let decoded;
         try {
             decoded = await firebaseAuth.verifyIdToken(data.idToken);
