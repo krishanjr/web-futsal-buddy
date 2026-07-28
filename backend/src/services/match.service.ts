@@ -1,11 +1,11 @@
-import { MatchMongoRepository } from "../repositories/match.repository";
+import { MatchRepository } from "../repositories/match.repository";
 import { CreateMatchDTO, UpdateMatchDTO, SearchMatchDTO } from "../dtos/match.dto";
 import { IMatch } from "../models/match.model";
 import { HttpException } from "../exceptions/http-exception";
 import { TeamBalancerService } from "./team-balancer.service";
 import { NotifyService } from "../repositories/notification.repository";
 
-const matchRepository = new MatchMongoRepository();
+const matchRepository = new MatchRepository();
 const teamBalancer = new TeamBalancerService();
 
 export class MatchService {
