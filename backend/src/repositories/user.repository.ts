@@ -1,0 +1,69 @@
+import { UserModel, IUser } from "../models/user.model";
+
+export interface IUserRepository {
+    getUserByEmail(email: string): Promise<IUser | null>;
+    getUserByUsername(username: string): Promise<IUser | null>;
+    createUser(user: Partial<IUser>): Promise<IUser>;
+    getUserById(id: string): Promise<IUser | null>;
+    getAll(): Promise<IUser[]>;
+    update(id: string, user: Partial<IUser>): Promise<IUser | null>;
+    delete(id: string): Promise<boolean>;
+    getUserByIdWithPassword(id: string): Promise<IUser | null>;
+    getUserByEmailWithOtp(email: string): Promise<IUser | null>;
+}
+
+export class UserMongoRepository implements IUserRepository {
+    async getUserById(id: string): Promise<IUser | null> {
+        return await UserModel.findById(id).select("-password");
+    }
+
+    async getUserByEmail(email: string): Promise<IUser | null> {
+        return await UserModel.findOne({ email });
+    }
+
+    async getUserByUsername(username: string): Promise<IUser | null> {
+        return await UserModel.findOne({ username });
+    }
+
+    async createUser(user: Partial<IUser>): Promise<IUser> {
+        return await UserModel.create(user);
+    }
+
+    async getAll(): Promise<IUser[]> {
+        return await UserModel.find().select("-password");
+    }
+
+    async update(id: string, user: Partial<IUser>): Promise<IUser | null> {
+        return await UserModel.findByIdAndUpdate(id, user, { new: true }).select("-password");
+    }
+
+    async delete(id: string): Promise<boolean> {
+        const deleted = await UserModel.findByIdAndDelete(id);
+        return !!deleted;
+    }
+
+    async getUserByIdWithPassword(id: string): Promise<IUser | null> {
+        return await UserModel.findById(id);
+    }
+
+    async getUserByEmailWithOtp(email: string): Promise<IUser | null> {
+        return await UserModel.findOne({ email }).select("+resetOtpHash +resetOtpExpires");
+    }
+
+    async aggregateUserGrowthByMonth(months: number): Promise<{ month: string; count: number }[]> {
+        const since = new Date();
+        since.setMonth(since.getMonth() - (months - 1));
+
+        const result = await UserModel.aggregate([
+            { $match: { createdAt: { $gte: since } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+        return result.map((r) => ({ month: r._id, count: r.count }));
+    }
+}
