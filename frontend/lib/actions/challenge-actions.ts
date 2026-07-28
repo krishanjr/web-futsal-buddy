@@ -12,9 +12,6 @@ export interface ActionResult {
 
 export async function fetchMyChallengesAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<{ sent: Challenge[]; received: Challenge[] }>("/challenges/me", {
     token: session.token,
   });
@@ -26,9 +23,6 @@ export async function sendChallengeAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const body = {
     challengerTeamId: String(formData.get("challengerTeamId") || ""),
@@ -55,9 +49,6 @@ export async function sendChallengeAction(
 
 export async function acceptChallengeAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/challenges/${id}/accept`, {
     method: "PATCH",
     token: session.token,
@@ -68,9 +59,6 @@ export async function acceptChallengeAction(id: string) {
 
 export async function rejectChallengeAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/challenges/${id}/reject`, {
     method: "PATCH",
     token: session.token,
@@ -81,9 +69,6 @@ export async function rejectChallengeAction(id: string) {
 
 export async function withdrawChallengeAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/challenges/${id}`, {
     method: "DELETE",
     token: session.token,
@@ -98,9 +83,6 @@ export async function counterChallengeAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const body = {
     counterDate: String(formData.get("counterDate") || ""),

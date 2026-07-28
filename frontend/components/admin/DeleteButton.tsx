@@ -1,26 +1,30 @@
 "use client";
 
-interface DeleteButtonProps {
-  action: () => Promise<unknown> | unknown;
-  label?: string;
+import { useTransition } from "react";
+
+interface Props {
+  action: () => Promise<void>;
   confirmText?: string;
+  label?: string;
 }
 
-export default function DeleteButton({ action, label = "Delete", confirmText }: DeleteButtonProps) {
-  const handleClick = () => {
-    if (confirmText && !window.confirm(confirmText)) {
-      return;
-    }
-    void action();
-  };
+export default function DeleteButton({ action, confirmText, label }: Props) {
+  const [pending, startTransition] = useTransition();
 
   return (
     <button
       type="button"
-      onClick={handleClick}
-      className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600"
+      disabled={pending}
+      onClick={() => {
+        if (window.confirm(confirmText || "Are you sure you want to delete this? This cannot be undone.")) {
+          startTransition(() => {
+            action();
+          });
+        }
+      }}
+      className="text-xs font-medium text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors"
     >
-      {label}
+      {pending ? "Deleting…" : label || "Delete"}
     </button>
   );
 }

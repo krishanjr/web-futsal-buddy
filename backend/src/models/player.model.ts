@@ -3,18 +3,25 @@ import { PlayerProfileType } from "../types/player.type";
 
 export interface IPlayerProfile extends PlayerProfileType, Document {
     _id: mongoose.Types.ObjectId;
-    userId: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
 const PlayerProfileSchema: Schema = new Schema<IPlayerProfile>(
     {
-        userId: { type: String, required: true, index: true },
-        position: { type: String, enum: ["forward", "midfielder", "defender", "goalkeeper", "any"], required: true },
-        skillLevel: { type: String, enum: ["beginner", "intermediate", "advanced", "professional"], required: true },
-        preferredFoot: { type: String, enum: ["right", "left"], default: "right" },
-        age: { type: Number, min: 13, max: 60 },
+        userId: { type: String, required: true, unique: true },
+        position: {
+            type: String,
+            enum: ["goalkeeper", "defender", "midfielder", "forward", "any"],
+            default: "any",
+        },
+        skillLevel: {
+            type: String,
+            enum: ["beginner", "intermediate", "advanced", "professional"],
+            default: "beginner",
+        },
+        preferredFoot: { type: String, enum: ["left", "right", "both"], default: "right" },
+        age: { type: Number, required: true },
         city: { type: String, required: true },
         bio: { type: String, maxlength: 500 },
         availability: { type: [String], default: [] },
@@ -25,7 +32,7 @@ const PlayerProfileSchema: Schema = new Schema<IPlayerProfile>(
             goals: { type: Number, default: 0 },
             assists: { type: Number, default: 0 },
         },
-        lookingFor: { type: String, enum: ["both", "teammate", "opponent"], default: "both" },
+        lookingFor: { type: String, enum: ["teammate", "opponent", "both"], default: "both" },
         isAvailable: { type: Boolean, default: true },
     },
     { timestamps: true }

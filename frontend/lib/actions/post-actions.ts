@@ -17,9 +17,6 @@ export async function createPostAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const postType = String(formData.get("postType") || "") as PostType;
   const body: Record<string, unknown> = {
@@ -65,9 +62,6 @@ export async function fetchOpenPostsAction(params: {
   skillLevel?: string;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.postType) qs.set("postType", params.postType);
   if (params.city) qs.set("city", params.city);
@@ -79,33 +73,21 @@ export async function fetchOpenPostsAction(params: {
 
 export async function fetchMyPostsAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Post[]>("/posts/mine", { token: session.token });
 }
 
 export async function fetchMyApplicationsAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Application[]>("/posts/applications/mine", { token: session.token });
 }
 
 export async function fetchPostByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Post>(`/posts/${id}`, { token: session.token });
 }
 
 export async function fetchApplicationsForPostAction(postId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Application[]>(`/posts/${postId}/applications`, { token: session.token });
 }
 
@@ -113,9 +95,6 @@ export async function fetchApplicationsForPostAction(postId: string) {
 
 export async function closePostAction(postId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/posts/${postId}`, { method: "DELETE", token: session.token });
   revalidatePath("/requests");
   revalidatePath("/organizer/requests");
@@ -128,9 +107,6 @@ export async function applyToPostAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const teamId = String(formData.get("teamId") || "");
   const message = String(formData.get("message") || "");
@@ -155,9 +131,6 @@ export async function applyToPostAction(
 
 export async function withdrawApplicationAction(applicationId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/posts/applications/${applicationId}`, {
     method: "DELETE",
     token: session.token,
@@ -172,9 +145,6 @@ export async function reviewApplicationAction(
   action: "accept" | "reject"
 ) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch<{ application: Application; matchId?: string }>(
     `/posts/applications/${applicationId}`,
     {

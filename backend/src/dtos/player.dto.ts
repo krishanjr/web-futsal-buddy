@@ -1,37 +1,18 @@
 import { z } from "zod";
+import { PlayerProfileSchema } from "../types/player.type";
 
-export const CreatePlayerProfileDTO = z.object({
-    position: z.enum(["forward", "midfielder", "defender", "goalkeeper", "any"]),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced", "professional"]),
-    preferredFoot: z.enum(["right", "left"]).default("right"),
-    age: z.number().min(13).max(60),
-    city: z.string().min(1),
-    bio: z.string().max(500).optional(),
-    availability: z.array(z.string()).default([]),
-    lookingFor: z.enum(["both", "teammate", "opponent"]).default("both"),
-    isAvailable: z.boolean().default(true),
-});
+export const CreatePlayerProfileDTO = PlayerProfileSchema.omit({ userId: true });
 export type CreatePlayerProfileDTO = z.infer<typeof CreatePlayerProfileDTO>;
 
-export const UpdatePlayerProfileDTO = z.object({
-    position: z.enum(["forward", "midfielder", "defender", "goalkeeper", "any"]).optional(),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced", "professional"]).optional(),
-    preferredFoot: z.enum(["right", "left"]).optional(),
-    age: z.number().min(13).max(60).optional(),
-    city: z.string().min(1).optional(),
-    bio: z.string().max(500).optional(),
-    availability: z.array(z.string()).optional(),
-    lookingFor: z.enum(["both", "teammate", "opponent"]).optional(),
-    isAvailable: z.boolean().optional(),
-}).partial();
+export const UpdatePlayerProfileDTO = PlayerProfileSchema.omit({ userId: true }).partial();
 export type UpdatePlayerProfileDTO = z.infer<typeof UpdatePlayerProfileDTO>;
 
 export const SearchPlayerDTO = z.object({
-    position: z.enum(["forward", "midfielder", "defender", "goalkeeper", "any"]).optional(),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced", "professional"]).optional(),
-    lookingFor: z.enum(["both", "teammate", "opponent"]).optional(),
     city: z.string().optional(),
-    search: z.string().optional(),
+    position: z.enum(["goalkeeper", "defender", "midfielder", "forward", "any"]).optional(),
+    skillLevel: z.enum(["beginner", "intermediate", "advanced", "professional"]).optional(),
+    lookingFor: z.enum(["teammate", "opponent", "both"]).optional(),
+    isAvailable: z.coerce.boolean().optional(),
     page: z.coerce.number().min(1).default(1),
     limit: z.coerce.number().min(1).max(50).default(10),
 });

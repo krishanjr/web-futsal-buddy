@@ -31,7 +31,8 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export async function requireSession(): Promise<Session | null> {
+export async function requireSession(): Promise<Session> {
   const session = await getSession();
+  if (!session) throw new Error("Not authenticated");
   return session;
 }

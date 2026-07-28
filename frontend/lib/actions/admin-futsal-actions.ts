@@ -13,9 +13,6 @@ export async function fetchAdminFutsalsAction(params: {
   isVerified?: boolean;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.page) qs.set("page", String(params.page));
   if (params.size) qs.set("size", String(params.size));
@@ -31,9 +28,6 @@ export async function fetchAdminFutsalsAction(params: {
 
 export async function verifyFutsalAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/futsals/${id}/verify`, {
     method: "PATCH",
     token: session.token,
@@ -43,9 +37,6 @@ export async function verifyFutsalAction(id: string) {
 
 export async function unverifyFutsalAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/futsals/${id}/unverify`, {
     method: "PATCH",
     token: session.token,
@@ -55,9 +46,6 @@ export async function unverifyFutsalAction(id: string) {
 
 export async function deleteAdminFutsalAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/futsals/${id}`, {
     method: "DELETE",
     token: session.token,

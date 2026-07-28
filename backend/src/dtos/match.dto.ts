@@ -1,21 +1,10 @@
 import { z } from "zod";
 import { MatchSchema } from "../types/match.type";
 
-export const CreateMatchDTO = MatchSchema.omit({
-    organizerId: true,
-    teamsAssigned: true,
-    teamA: true,
-    teamB: true,
-    status: true,
-});
+export const CreateMatchDTO = MatchSchema.omit({ status: true, organizerId: true });
 export type CreateMatchDTO = z.infer<typeof CreateMatchDTO>;
 
-export const UpdateMatchDTO = MatchSchema.omit({
-    organizerId: true,
-    teamsAssigned: true,
-    teamA: true,
-    teamB: true,
-}).partial();
+export const UpdateMatchDTO = MatchSchema.omit({ organizerId: true }).partial();
 export type UpdateMatchDTO = z.infer<typeof UpdateMatchDTO>;
 
 export const SearchMatchDTO = z.object({

@@ -12,9 +12,6 @@ export interface ActionResult {
 
 export async function fetchFutsalReviewsAction(futsalId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Review[]>(`/reviews/futsal/${futsalId}`, { token: session.token });
 }
 
@@ -24,9 +21,6 @@ export async function createReviewAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const rating = Number(formData.get("rating") || 0);
   const comment = String(formData.get("comment") || "") || undefined;

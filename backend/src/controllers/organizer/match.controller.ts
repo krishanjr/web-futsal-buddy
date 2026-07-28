@@ -9,14 +9,15 @@ import { IUser } from "../../models/user.model";
 const matchService = new MatchService();
 
 export class MatchController {
-    async getAllMatches(req: Request, res: Response) {
+    async createMatch(req: Request, res: Response) {
         try {
-            const parsed = SearchMatchDTO.safeParse(req.query);
+            const organizerId = (req.user as IUser)._id.toString();
+            const parsed = CreateMatchDTO.safeParse(req.body);
             if (!parsed.success) {
                 return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
             }
-            const result = await matchService.searchMatches(parsed.data);
-            return ApiResponseHelper.success(res, { matches: result.matches, pagination: result.meta }, "Matches fetched");
+            const match = await matchService.createMatch(organizerId, parsed.data);
+            return ApiResponseHelper.success(res, match, "Match created successfully", 201);
         } catch (err: any) {
             return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
         }
@@ -31,15 +32,11 @@ export class MatchController {
         }
     }
 
-    async createMatch(req: Request, res: Response) {
+    async getMyMatches(req: Request, res: Response) {
         try {
-            const parsed = CreateMatchDTO.safeParse(req.body);
-            if (!parsed.success) {
-                return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
-            }
             const organizerId = (req.user as IUser)._id.toString();
-            const match = await matchService.createMatch(organizerId, parsed.data);
-            return ApiResponseHelper.success(res, match, "Match created successfully", 201);
+            const matches = await matchService.getMyMatches(organizerId);
+            return ApiResponseHelper.success(res, matches, "Matches fetched");
         } catch (err: any) {
             return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
         }
@@ -47,11 +44,11 @@ export class MatchController {
 
     async updateMatch(req: Request, res: Response) {
         try {
+            const organizerId = (req.user as IUser)._id.toString();
             const parsed = UpdateMatchDTO.safeParse(req.body);
             if (!parsed.success) {
                 return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
             }
-            const organizerId = (req.user as IUser)._id.toString();
             const match = await matchService.updateMatch(organizerId, req.params.id, parsed.data);
             return ApiResponseHelper.success(res, match, "Match updated");
         } catch (err: any) {
@@ -69,6 +66,19 @@ export class MatchController {
         }
     }
 
+    async searchMatches(req: Request, res: Response) {
+        try {
+            const parsed = SearchMatchDTO.safeParse(req.query);
+            if (!parsed.success) {
+                return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
+            }
+            const result = await matchService.searchMatches(parsed.data);
+            return ApiResponseHelper.success(res, result.matches, "Matches fetched", 200, result.meta);
+        } catch (err: any) {
+            return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
+        }
+    }
+
     async joinMatch(req: Request, res: Response) {
         try {
             const userId = (req.user as IUser)._id.toString();
@@ -79,14 +89,11 @@ export class MatchController {
         }
     }
 
-    async searchMatches(req: Request, res: Response) {
+    async leaveMatch(req: Request, res: Response) {
         try {
-            const parsed = SearchMatchDTO.safeParse(req.query);
-            if (!parsed.success) {
-                return ApiResponseHelper.error(res, formatZodError(parsed.error), 400);
-            }
-            const result = await matchService.searchMatches(parsed.data);
-            return ApiResponseHelper.success(res, { matches: result.matches, pagination: result.meta }, "Matches searched");
+            const userId = (req.user as IUser)._id.toString();
+            const match = await matchService.leaveMatch(req.params.id, userId);
+            return ApiResponseHelper.success(res, match, "Left match successfully");
         } catch (err: any) {
             return ApiResponseHelper.error(res, err.message || "Internal Server Error", err.status || 500);
         }

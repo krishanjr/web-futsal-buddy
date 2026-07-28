@@ -34,17 +34,11 @@ function buildFutsalBody(formData: FormData) {
 
 export async function fetchMyFutsalsAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Futsal[]>("/futsals/my/futsals", { token: session.token });
 }
 
 export async function fetchOrganizerFutsalByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Futsal>(`/futsals/${id}`, { token: session.token });
 }
 
@@ -53,9 +47,6 @@ export async function createFutsalAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const res = await apiFetch<Futsal>("/futsals", {
     method: "POST",
@@ -77,9 +68,6 @@ export async function updateFutsalAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const res = await apiFetch<Futsal>(`/futsals/${id}`, {
     method: "PATCH",
@@ -97,9 +85,6 @@ export async function updateFutsalAction(
 
 export async function deleteFutsalAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/futsals/${id}`, {
     method: "DELETE",
     token: session.token,
@@ -112,9 +97,6 @@ export async function addFutsalImagesAction(
   imageUrls: string[]
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   if (imageUrls.length === 0) {
     return { success: false, message: "No images to add" };
@@ -136,9 +118,6 @@ export async function addFutsalImagesAction(
 
 export async function removeFutsalImageAction(id: string, imageUrl: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/futsals/${id}/images`, {
     method: "DELETE",
     token: session.token,
@@ -154,9 +133,6 @@ export async function setFutsalHolidaysAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const raw = String(formData.get("holidays") || "");
   const holidays = raw
     .split("\n")

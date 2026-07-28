@@ -1,36 +1,65 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+// Server-only fetch wrapper around the Futsal Buddy Express API.
+// Never import this from a client component.
+
+export const API_BASE_URL =
+  process.env.API_BASE_URL || "http://localhost:5000/api/v1";
 
 export interface ApiResponse<T> {
+  status: number;
   success: boolean;
-  message?: string;
-  data?: T;
-  meta?: unknown;
+  message: string;
+  data: T;
+  meta?: { page: number; limit: number; total: number };
+}
+
+interface RequestOptions {
+  method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+  token?: string;
+  body?: unknown;
+  // skip Next.js fetch caching for dynamic admin data
+  cache?: RequestCache;
 }
 
 export async function apiFetch<T>(
-  endpoint: string,
-  options: { method?: string; body?: unknown; headers?: Record<string, string>; token?: string } = {}
+  path: string,
+  options: RequestOptions = {}
 ): Promise<ApiResponse<T>> {
-  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  const { method = "GET", token, body, cache = "no-store" } = options;
 
-  const response = await fetch(url, {
-    method: options.method || "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-      ...(options.headers || {}),
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-
-  const payload = await response.json().catch(() => ({}));
-
-  return {
-    success: response.ok,
-    message: payload.message,
-    data: payload.data,
-    meta: payload.meta,
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
   };
-}
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-export { API_BASE_URL };
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      cache,
+    });
+  } catch {
+    return {
+      status: 0,
+      success: false,
+      message:
+        "Could not reach the Futsal Buddy API. Is the backend server running?",
+      data: null as T,
+    };
+  }
+
+  let json: ApiResponse<T>;
+  try {
+    json = await res.json();
+  } catch {
+    return {
+      status: res.status,
+      success: false,
+      message: "Unexpected response from server",
+      data: null as T,
+    };
+  }
+
+  return json;
+}

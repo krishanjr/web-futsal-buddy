@@ -13,17 +13,11 @@ export interface ActionResult {
 
 export async function fetchMyPlayerTeamsAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<AdminTeam[]>("/teams/my/teams", { token: session.token });
 }
 
 export async function fetchPlayerTeamByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<AdminTeam>(`/teams/${id}`, { token: session.token });
 }
 
@@ -44,9 +38,6 @@ export async function createPlayerTeamAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const res = await apiFetch<AdminTeam>("/teams", {
     method: "POST",
@@ -68,9 +59,6 @@ export async function updatePlayerTeamAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const res = await apiFetch<AdminTeam>(`/teams/${id}`, {
     method: "PATCH",
@@ -88,9 +76,6 @@ export async function updatePlayerTeamAction(
 
 export async function deletePlayerTeamAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/teams/${id}`, { method: "DELETE", token: session.token });
   revalidatePath("/my-team");
 }
@@ -101,9 +86,6 @@ export async function invitePlayerAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const username = String(formData.get("username") || "").trim();
 
   if (!username) return { success: false, message: "Enter a username" };

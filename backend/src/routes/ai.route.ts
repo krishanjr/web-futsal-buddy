@@ -1,18 +1,14 @@
 import { Router } from "express";
-import { AIService } from "../services/ai.service";
+import { AIController } from "../controllers/ai.controller";
+import { authorizedMiddleware } from "../middlewares/authorized.middleware";
 
 const aiRouter = Router();
-const aiService = new AIService();
+const aiController = new AIController();
 
-aiRouter.post("/insight", async (req, res) => {
-    try {
-        const { prompt } = req.body;
-        if (!prompt) return res.status(400).json({ success: false, message: "Prompt is required" });
-        const result = await aiService.getGeneralInsight(prompt);
-        return res.json({ success: true, data: result });
-    } catch (err: any) {
-        return res.status(500).json({ success: false, message: err.message || "Internal Server Error" });
-    }
-});
+// All AI routes require authentication
+aiRouter.get("/my-insights", authorizedMiddleware, (req, res) => aiController.getMyInsights(req, res));
+aiRouter.post("/match-tip", authorizedMiddleware, (req, res) => aiController.getMatchTip(req, res));
+aiRouter.post("/team-advice", authorizedMiddleware, (req, res) => aiController.getTeamAdvice(req, res));
+aiRouter.post("/ask", authorizedMiddleware, (req, res) => aiController.askQuestion(req, res));
 
 export default aiRouter;

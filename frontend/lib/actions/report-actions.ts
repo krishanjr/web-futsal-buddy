@@ -12,12 +12,7 @@ export async function fileReportAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  let session;
-  try {
-    session = await requireSession();
-  } catch {
-    return { success: false, message: "Please log in to submit a report" };
-  }
+  const session = await requireSession();
 
   const reportedUsername = String(formData.get("reportedUsername") || "").trim();
   const reason = String(formData.get("reason") || "").trim();

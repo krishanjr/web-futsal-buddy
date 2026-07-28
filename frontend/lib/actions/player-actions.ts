@@ -73,9 +73,6 @@ export async function completePasswordResetAction(
 
 export async function fetchMyAccountAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<AuthUser>("/auth/profile", { token: session.token });
 }
 
@@ -84,9 +81,6 @@ export async function updateMyAccountAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const body = {
     firstName: String(formData.get("firstName") || ""),
     lastName: String(formData.get("lastName") || ""),
@@ -108,9 +102,6 @@ export async function uploadProfilePhotoAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const file = formData.get("photo");
 
   if (!(file instanceof File)) {
@@ -141,9 +132,6 @@ export async function changePasswordAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const currentPassword = String(formData.get("currentPassword") || "");
   const newPassword = String(formData.get("newPassword") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
@@ -171,9 +159,6 @@ export async function changePasswordAction(
 
 export async function fetchMyPlayerProfileAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<PlayerProfile>("/players/me/profile", { token: session.token });
 }
 
@@ -182,9 +167,6 @@ export async function saveMyPlayerProfileAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const exists = String(formData.get("_exists") || "") === "1";
 
   const body = {
@@ -216,9 +198,6 @@ export async function saveMyPlayerProfileAction(
 
 export async function fetchPlayerProfileByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<PlayerProfile>(`/players/${id}`, { token: session.token });
 }
 
@@ -231,9 +210,6 @@ export async function fetchTeammatesAction(params: {
   search?: string;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.city) qs.set("city", params.city);
   if (params.position) qs.set("position", params.position);
@@ -250,9 +226,6 @@ export async function fetchOpponentsAction(params: {
   skillLevel?: string;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.city) qs.set("city", params.city);
   if (params.position) qs.set("position", params.position);
@@ -272,9 +245,6 @@ export async function fetchOpenMatchesAction(params: {
   status?: string;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.city) qs.set("city", params.city);
   if (params.skillLevel) qs.set("skillLevel", params.skillLevel);
@@ -288,17 +258,11 @@ export async function fetchOpenMatchesAction(params: {
 
 export async function fetchMatchByIdAction(matchId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<AdminMatch>(`/matches/${matchId}`, { token: session.token });
 }
 
 export async function joinMatchAction(matchId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/matches/${matchId}/join`, {
     method: "POST",
     token: session.token,
@@ -310,9 +274,6 @@ export async function joinMatchAction(matchId: string) {
 
 export async function leaveMatchAction(matchId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/matches/${matchId}/leave`, {
     method: "DELETE",
     token: session.token,
@@ -324,9 +285,6 @@ export async function leaveMatchAction(matchId: string) {
 
 export async function fetchMyStrengthAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<{ strength: number; model: { trainedAt: string; metrics: any } }>(
     "/players/me/strength",
     { token: session.token }
@@ -337,9 +295,6 @@ export async function fetchMyStrengthAction() {
 
 export async function fetchTeamsAction(params: { city?: string; skillLevel?: string }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.city) qs.set("city", params.city);
   if (params.skillLevel) qs.set("skillLevel", params.skillLevel);
@@ -352,9 +307,6 @@ export async function fetchTeamsAction(params: { city?: string; skillLevel?: str
 
 export async function joinTeamAction(teamId: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const res = await apiFetch(`/teams/${teamId}/join`, {
     method: "POST",
     token: session.token,
@@ -372,9 +324,6 @@ export async function fetchFutsalsAction(params: {
   maxPrice?: number;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.district) qs.set("district", params.district);
   if (params.search) qs.set("search", params.search);
@@ -388,9 +337,6 @@ export async function fetchFutsalsAction(params: {
 
 export async function fetchFutsalByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Futsal>(`/futsals/${id}`, { token: session.token });
 }
 
@@ -398,9 +344,6 @@ export async function fetchFutsalByIdAction(id: string) {
 
 export async function fetchAvailabilityAction(futsalId: string, date: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<{ blocked: boolean; slots: AvailabilitySlot[] }>(
     `/bookings/futsal/${futsalId}/availability?date=${date}`,
     { token: session.token }
@@ -412,9 +355,6 @@ export async function createBookingAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const futsalId = String(formData.get("futsalId") || "");
   const date = String(formData.get("date") || "");
@@ -438,17 +378,11 @@ export async function createBookingAction(
 
 export async function fetchMyBookingsAction() {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<Booking[]>("/bookings/me", { token: session.token });
 }
 
 export async function cancelBookingAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/bookings/${id}`, { method: "DELETE", token: session.token });
   revalidatePath("/bookings");
 }

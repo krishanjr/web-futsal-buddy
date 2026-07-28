@@ -89,7 +89,7 @@ export class MatchService {
             } as Partial<IMatch>);
 
             await Promise.all(
-                updated.players.map((pid: string) =>
+                updated.players.map((pid) =>
                     NotifyService.send(
                         pid,
                         "team_joined",

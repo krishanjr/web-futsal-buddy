@@ -1,73 +1,84 @@
-import { PlayerProfileModel } from "../models/player.model";
-import { HttpException } from "../exceptions/http-exception";
+import { PlayerMongoRepository } from "../repositories/player.repository";
 import { CreatePlayerProfileDTO, UpdatePlayerProfileDTO, SearchPlayerDTO } from "../dtos/player.dto";
+import { IPlayerProfile } from "../models/player.model";
+import { HttpException } from "../exceptions/http-exception";
+
+const playerRepository = new PlayerMongoRepository();
 
 export class PlayerService {
-    async createProfile(userId: string, data: CreatePlayerProfileDTO) {
-        const existing = await PlayerProfileModel.findOne({ userId });
-        if (existing) throw new HttpException(400, "Player profile already exists");
-        return await PlayerProfileModel.create({ userId, ...data });
-    }
-
-    async getMyProfile(userId: string) {
-        const profile = await PlayerProfileModel.findOne({ userId });
-        if (!profile) throw new HttpException(404, "Player profile not found");
-        return profile;
-    }
-
-    async getProfileById(id: string) {
-        const profile = await PlayerProfileModel.findById(id);
-        if (!profile) throw new HttpException(404, "Player profile not found");
-        return profile;
-    }
-
-    async updateProfile(userId: string, data: UpdatePlayerProfileDTO) {
-        const profile = await PlayerProfileModel.findOne({ userId });
-        if (!profile) throw new HttpException(404, "Player profile not found");
-        return await PlayerProfileModel.findByIdAndUpdate(profile._id, data, { new: true });
-    }
-
-    async deleteProfile(userId: string) {
-        const profile = await PlayerProfileModel.findOne({ userId });
-        if (!profile) throw new HttpException(404, "Player profile not found");
-        await PlayerProfileModel.findByIdAndDelete(profile._id);
-    }
-
-    async searchPlayers(query: SearchPlayerDTO) {
-        return this._searchProfiles(query);
-    }
-
-    async searchTeammates(query: SearchPlayerDTO) {
-        return this._searchProfiles(query);
-    }
-
-    async searchOpponents(query: SearchPlayerDTO) {
-        return this._searchProfiles(query);
-    }
-
-    private async _searchProfiles(query: SearchPlayerDTO) {
-        const filters: Record<string, any> = { isAvailable: true };
-        if (query.lookingFor) {
-            filters.lookingFor = { $in: [query.lookingFor, "both"] };
+    async createProfile(userId: string, data: CreatePlayerProfileDTO): Promise<IPlayerProfile> {
+        const existing = await playerRepository.findByUserId(userId);
+        if (existing) {
+            throw new HttpException(400, "Player profile already exists. Use update instead.");
         }
+
+        const profile = await playerRepository.create({ ...data, userId });
+        return profile;
+    }
+
+    async getMyProfile(userId: string): Promise<IPlayerProfile> {
+        const profile = await playerRepository.findByUserId(userId);
+        if (!profile) {
+            throw new HttpException(404, "Player profile not found. Please create one.");
+        }
+        return profile;
+    }
+
+    async getProfileById(id: string): Promise<IPlayerProfile> {
+        const profile = await playerRepository.findById(id);
+        if (!profile) {
+            throw new HttpException(404, "Player profile not found");
+        }
+        return profile;
+    }
+
+    async updateProfile(userId: string, data: UpdatePlayerProfileDTO): Promise<IPlayerProfile> {
+        const profile = await playerRepository.findByUserId(userId);
+        if (!profile) {
+            throw new HttpException(404, "Player profile not found");
+        }
+        const updated = await playerRepository.update(profile._id.toString(), data as Partial<IPlayerProfile>);
+        if (!updated) throw new HttpException(500, "Failed to update profile");
+        return updated;
+    }
+
+    async deleteProfile(userId: string): Promise<void> {
+        const profile = await playerRepository.findByUserId(userId);
+        if (!profile) {
+            throw new HttpException(404, "Player profile not found");
+        }
+        await playerRepository.delete(profile._id.toString());
+    }
+
+    // Search teammates and opponents
+    async searchPlayers(query: SearchPlayerDTO) {
+        const filters: Record<string, any> = {};
+
+        if (query.city) filters.city = { $regex: query.city, $options: "i" };
         if (query.position) filters.position = query.position;
         if (query.skillLevel) filters.skillLevel = query.skillLevel;
-        if (query.city) filters.city = { $regex: query.city, $options: "i" };
-        if (query.search) {
-            filters.$or = [
-                { city: { $regex: query.search, $options: "i" } },
-            ];
-        }
+        if (query.lookingFor) filters.lookingFor = { $in: [query.lookingFor, "both"] };
+        if (query.isAvailable !== undefined) filters.isAvailable = query.isAvailable;
 
         const skip = (query.page - 1) * query.limit;
-        const [profiles, total] = await Promise.all([
-            PlayerProfileModel.find(filters).skip(skip).limit(query.limit).sort({ createdAt: -1 }),
-            PlayerProfileModel.countDocuments(filters),
+        const [players, total] = await Promise.all([
+            playerRepository.search(filters, skip, query.limit),
+            playerRepository.countSearch(filters),
         ]);
 
         return {
-            players: profiles,
-            meta: { page: query.page, limit: query.limit, total, totalPages: Math.ceil(total / query.limit) || 1 },
+            players,
+            meta: { page: query.page, limit: query.limit, total },
         };
+    }
+
+    // Search specifically for teammates
+    async searchTeammates(query: SearchPlayerDTO) {
+        return this.searchPlayers({ ...query, lookingFor: "teammate" });
+    }
+
+    // Search specifically for opponents
+    async searchOpponents(query: SearchPlayerDTO) {
+        return this.searchPlayers({ ...query, lookingFor: "opponent" });
     }
 }

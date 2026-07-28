@@ -18,9 +18,6 @@ export async function fetchUsersAction(params: {
   role?: string;
 }) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   const qs = new URLSearchParams();
   if (params.page) qs.set("page", String(params.page));
   if (params.size) qs.set("size", String(params.size));
@@ -35,9 +32,6 @@ export async function fetchUsersAction(params: {
 
 export async function fetchUserByIdAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   return apiFetch<AdminUser>(`/admin/users/${id}`, { token: session.token });
 }
 
@@ -46,9 +40,6 @@ export async function createUserAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const body = {
     firstName: String(formData.get("firstName") || ""),
@@ -81,9 +72,6 @@ export async function updateUserAction(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
 
   const body = {
     firstName: String(formData.get("firstName") || ""),
@@ -109,9 +97,6 @@ export async function updateUserAction(
 
 export async function deleteUserAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/users/${id}`, {
     method: "DELETE",
     token: session.token,
@@ -121,9 +106,6 @@ export async function deleteUserAction(id: string) {
 
 export async function toggleUserActiveAction(id: string, activate: boolean) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/users/${id}/${activate ? "activate" : "deactivate"}`, {
     method: "PATCH",
     token: session.token,
@@ -133,9 +115,6 @@ export async function toggleUserActiveAction(id: string, activate: boolean) {
 
 export async function verifyOrganizerAction(id: string) {
   const session = await requireSession();
-  if (!session) {
-    return { success: false, message: "Please log in to continue" };
-  }
   await apiFetch(`/admin/users/${id}/verify-organizer`, {
     method: "PATCH",
     token: session.token,

@@ -147,7 +147,8 @@ export class AdminService {
     }
 
     async deleteTeam(id: string): Promise<void> {
-        await teamRepository.delete(id);
+        const deleted = await teamRepository.delete(id);
+        if (!deleted) throw new HttpException(404, "Team not found");
     }
 
     // ─── Matches (admin has full control, bypasses ownership checks) ─────────
@@ -195,7 +196,8 @@ export class AdminService {
     }
 
     async deleteMatch(id: string): Promise<void> {
-        await matchRepository.delete(id);
+        const deleted = await matchRepository.delete(id);
+        if (!deleted) throw new HttpException(404, "Match not found");
     }
 
     // ─── Dashboard ─────────────────────────────────────────────────────────

@@ -1,9 +1,11 @@
 import { ZodError } from "zod";
 
+/** Returns a readable string from a Zod validation error */
 export function formatZodError(error: ZodError): string {
-    const messages = error.issues.map((issue) => {
-        const path = issue.path.join(".");
-        return `${path}: ${issue.message}`;
-    });
-    return messages.join("; ");
+    const flat = error.flatten();
+    const fieldErrors = flat.fieldErrors as Record<string, string[] | undefined>;
+    const messages = Object.entries(fieldErrors)
+        .map(([field, errs]) => `${field}: ${(errs ?? []).join(", ")}`)
+        .join(" | ");
+    return messages || "Validation error";
 }
