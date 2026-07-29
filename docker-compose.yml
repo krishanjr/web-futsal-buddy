@@ -1,0 +1,40 @@
+services:
+
+  api:
+    build: ./backend
+    container_name: futsal-api-container
+    ports:
+      - "8089:8089"
+    environment:
+      - NODE_ENV=production
+      - PORT=8089
+      - MONGODB_URL=mongodb://mongo:27017/futsal-buddy-db
+    depends_on:
+      - mongo
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://api:8089
+    container_name: futsal-web-container
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - NEXT_PUBLIC_API_BASE_URL=http://api:8089
+      - API_BASE_URL=http://api:8089
+    depends_on:
+      - api
+
+  mongo:
+    image: mongo:8
+    container_name: futsal-mongo-container
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
