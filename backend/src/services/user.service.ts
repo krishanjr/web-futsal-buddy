@@ -87,14 +87,17 @@ export class UserService {
      * issue our own normal JWT session — everything downstream (middleware,
      * cookies, roles) works exactly like a regular email/password login.
      */
-    async googleLogin(data: GoogleLoginDTO): Promise<{ user: IUser; token: string }> {
-        let decoded;
-        try {
-            decoded = await firebaseAuth.verifyIdToken(data.idToken);
-        } catch (err: any) {
-            console.error("[firebase] verifyIdToken failed in googleLogin:", err.message);
-            throw new HttpException(401, "Invalid or expired Google sign-in token");
-        }
+async googleLogin(data: GoogleLoginDTO): Promise<{ user: IUser; token: string }> {
+         if (!firebaseAuth) {
+             throw new HttpException(503, "Firebase Admin credentials are not configured");
+         }
+         let decoded;
+         try {
+             decoded = await firebaseAuth.verifyIdToken(data.idToken);
+         } catch (err: any) {
+             console.error("[firebase] verifyIdToken failed in googleLogin:", err.message);
+             throw new HttpException(401, "Invalid or expired Google sign-in token");
+         }
 
         const email = decoded.email;
         if (!email) {

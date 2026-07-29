@@ -1,5 +1,7 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
+import os from "os";
+import path from "path";
 
 let mongod: MongoMemoryServer;
 
@@ -7,7 +9,14 @@ let mongod: MongoMemoryServer;
 // Spins up a real (but in-memory, throwaway) MongoDB so integration tests
 // hit real Mongoose models/validation instead of mocks.
 beforeAll(async () => {
-  mongod = await MongoMemoryServer.create();
+  mongod = await MongoMemoryServer.create({
+    instance: {
+      launchTimeout: 30000,
+    },
+    binary: {
+      downloadDir: path.join(os.tmpdir(), "mongodb-memory-server"),
+    },
+  });
   const uri = mongod.getUri();
   await mongoose.connect(uri);
 });

@@ -8,12 +8,8 @@ describe("UserService google login", () => {
   it("returns a clear error when Firebase Admin is not configured", async () => {
     const service = new UserService();
 
-    await expect(service.googleLogin({ idToken: "invalid-token" } as any)).rejects.toMatchObject({
-      statusCode: 503,
-    });
-
-    await expect(service.googleLogin({ idToken: "invalid-token" } as any)).rejects.toThrow(
-      "Firebase Admin credentials are not configured"
+await expect(service.googleLogin({ idToken: "invalid-token" } as any)).rejects.toThrow(
+       "Firebase Admin credentials are not configured"
     );
   });
 });

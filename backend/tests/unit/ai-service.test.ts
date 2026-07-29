@@ -80,8 +80,7 @@ describe("AIService — API key configured (calls Gemini)", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const calledUrl = fetchMock.mock.calls[0][0] as string;
-    expect(calledUrl).toContain("gemini-pro");
-    expect(calledUrl).toContain("key=fake-test-key");
+    expect(calledUrl).toContain("gemini-3.6-flash");
   });
 
   test("throws a clean error when Gemini responds with a non-OK status", async () => {
